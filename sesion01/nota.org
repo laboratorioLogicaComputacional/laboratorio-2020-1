@@ -1,0 +1,229 @@
+#+LATEX_CLASS: article
+#+LANGUAGE: es
+#+LATEX_HEADER: \usepackage[AUTO]{babel}
+#+LATEX_HEADER: \usepackage{fancyvrb}
+#+OPTIONS: toc:nil
+#+DATE:
+#+AUTHOR: Dr. Miguel Carrillo Barajas \\
+#+AUTHOR: Sara Doris Montes Incin \\
+#+AUTHOR: Mauricio Esquivel Reyes \\
+#+TITLE: Sesión de laboratorio 01 \\
+#+TITLE: Lógica Computacional
+
+* Introducción
+** ¿Qué es Haskell?
+Haskell es un lenguaje de programación multi-propósito puramente funcional
+con semántica no estricta y tipado fuerte.
+Haskell cuenta con inferencia de tipos, por lo cual no es necesario especificar
+el tipo de las variables o las funciones.
+La mayoría de los lenguajes son imperativos, en estos se especifica los
+pasos que debe realizar el código. Los lenguajes funcionales trabajan de forma diferente.
+En lugar de realizar acciones en secuencia, evalua expresiones.
+*** Ejemplo Java
+#+begin_src java
+int pot(int n, int m){
+   int res = 1;
+   for(int i = 0; i < m; i++){
+      res *= n;
+   }
+   return res;
+}
+#+end_src
+*** Ejemplo Haskell
+#+begin_src haskell
+pot n 0 = 1
+pot n m = n * (pot n (m-1)) 
+#+end_src
+** Instalación
+En la página de https://www.haskell.org/downloads podrán encontrar los 
+paquetes de Haskell. Existen dos versiones Haskell Platform que incluye 
+el manejador de paquetes, el compilador GHC y otras herramientas.
+O también pueden descargar el compilador GHC que tiene el interpretre ghci.
+** Tipos básicos
+Haskell tiene definido los siguientes tipos:
+   - Bool
+     * True
+     * False
+     * &&
+     * ||
+     * not
+   - Char
+     * ++
+   - Int
+   - Integers
+   - Float
+   - Double
+     * +
+     * -
+     * /
+     * *
+   - Listas
+     * !!
+   - Tuplas
+     - fst
+     - snd
+
+Para conocer el tipo de una expresión  en haskell solo se necesita hacer:
+#+begin_src haskell
+> :t 5
+> :t "Hola mundo"
+> :t False
+> :t head
+#+end_src
+** Variables de tipo
+Pero ¿qué es esa a? Los tipos que acabamos de ver empiezan con letra mayúscula.
+La a es una variable de tipo, podemos pensarla como los genericos de otros lenguajes.
+Estas variables de tipo son más poderosas que los genericos, ya que nos 
+permiten escribir funciones muy generales mientras no dependan del comportamiento
+especifico de los tipos. Estas funciones son llamadas polimórficas.
+** Clases de tipo
+Las clases de tipos son una especie de interfaz que define algún tipo de
+comportamiento. Si un tipo es un miembro de una clase de tipos, significa 
+que ese tipo soporta e implementa el comportamiento que define la clase de tipos.
+Los podriamos ver como interfaces de Java.
+#+begin_src haskell
+> :t (==)
+(==) :: Eq a => a -> a -> Bool
+#+end_src
+Cualquier cosa antes del símbolo => es una restricción de clase.
+Se lee: La función de igualdad toma dos parámetros que son del mismo tipo
+y devuelve un Bool. El tipo de estos dos parámetros debe ser miembro de la
+clase Eq.
+*** Básicas 
+    - Eq
+    - Ord
+    - Show
+    - Read
+    - Enum
+** Módulos
+Un módulo de Haskell es una colección de funciones, tipos y clases de tipos
+relacionadas entre sí. Tener el código dividido en módulos tiene bastantes
+ventajas. Si un módulo es lo suficientemente genérico, las funciones que son 
+exportadas pueden ser utilizadas en una gran variedad de programas.
+
+La librería estándar de Haskell está dividida en varios módulos, cada uno de
+ellos está formado por funciones y tipos. La sintaxis para importar módulos
+en un script de Haskell es *import <nombre módulo>*. Debe aparecer antes de que
+definamos cualquier función. 
+#+begin_src haskell
+import Data.List 
+#+end_src
+La sintaxis para crear nuestros módulos de Haskell es *module <nombre módulo> where*
+#+begin_src haskell
+module Proposicional
+  where
+#+end_src
+** Tipos propios
+Haskell tiene definidos sus tipos primitivos, pero ¿Cómo los creamos? Una forma
+es utilizando la palabra clave *data* 
+#+begin_src haskell
+data Natural = Cero | Suc Natural deriving(Eq, Show)
+#+end_src
+Aquí estamos declarando el tipo de los números naturales. Vamos a crear algunas de 
+sus funciones.
+*** Suma 
+#+begin_src haskell
+suma :: Natural -> Natural -> Natural
+#+end_src
+*** Producto
+#+begin_src haskell
+prod :: Natural -> Natural -> Natural
+#+end_src
+*** Potencia
+#+begin_src haskell
+potN :: Natural -> Natural -> Natural
+#+end_src
+** Funciones
+*** Potencia de un número
+#+begin_src haskell
+pote :: Int -> Int -> Int
+#+end_src
+*** Factorial de un número
+#+begin_src haskell
+fact :: Integer -> Integer
+#+end_src
+*** Número de elementos de una lista
+#+begin_src haskell
+tam :: [a] -> Int
+#+end_src
+*** Primeros n elementos de una lista
+#+begin_src haskell
+primN :: [a] -> Int -> [a]
+#+end_src
+*** Elementos mayores a un elemento en una lista
+#+begin_src haskell
+mayores :: Ord a => [a] -> a -> [a]
+#+end_src
+** Más allá
+Esta es una introducción a haskell muy muy básica.
+Para seguir aprendiendo hay bastante material 
+en https://www.haskell.org/documentation
+
+* Lógica
+** Sintaxis
+Esta es la sintaxis de la Lógica Proposicional que utilizaremos. 
+\[PL ::= <ProposiciónAtómica> | \neg PL | (PL \land PL) | (PL \lor PL) | (PL \to PL) \]
+\[<ProposiciónAtómica> ::= \top | \bot | <VariableProposicional>\]
+\[<VariableProposicional> ::= v<Indice>\]
+\[ <Indice> ::= [i | i \in \mathbb{N}]\]
+
+** Definición en Haskell
+#+begin_src haskell
+-- Tipo de dato indice
+type Indice = Int
+
+-- Tipo de dato fórmula
+data PL = Top | Bot 
+              | Var Indice | Oneg PL 
+              | Oand PL PL | Oor PL PL 
+              | Oimp PL PL deriving (Eq, Show)
+#+end_src
+
+** Funciones
+*** Número de operadores
+#+begin_src haskell
+numOp :: PL -> Int
+numOp phi = case phi of
+     Top -> 0
+     Bot -> 0
+     Var p -> 0
+     Oneg p -> numOp p + 1
+     Oand p q -> numOp p + numOp q + 1
+     Oor p q -> numOp p + numOp q + 1
+     Oimp p q -> numOp p + numOp q + 1
+#+end_src
+*** Elimina implicaciones
+#+begin_src haskell
+quitaImp :: PL -> PL
+quitaImp phi = case phi of
+     Top -> Top
+     Bot -> Bot
+     Var p -> Var p
+     Oneg p -> Oneg $ quitaImp p
+     Oand p q -> Oand (quitaImp p) (quitaImp q)
+     Oor p q -> Oor (quitaImp p) (quitaImp q)
+     Oimp p q -> Oor (Oneg $ quitaImp p) (quitaImp q)
+#+end_src
+*** Número de operadores binarios
+#+begin_src haskell
+numObin :: PL -> Int
+numObin phi = case phi of
+     Top -> 0
+     Bot -> 0
+     Var p -> 0
+     Oneg p -> numObin p
+     Oand p q -> numObin p + numObin q + 1
+     Oor p q -> numObin p + numObin q + 1
+     Oimp p q -> numObin p + numObin q + 1
+#+end_src
+*** Forma Normal Negativa
+#+begin_src haskell
+toNNF :: PL -> PL
+toNNF p = toNNF $ quitaImp p where
+  toNNF (Oneg (Oand p q)) = toNNF $ Oor (Oneg $ toNNF p) (Oneg $ toNNF q)
+  toNNF (Oneg (Oor p q)) = toNNF $ Oand (Oneg $ toNNF p) (Oneg $ toNNF q)
+  toNNF (Oneg (Oneg p)) = toNNF p
+  toNNF (Oand p q) = Oand (toNNF p) (toNNF q)
+  toNNF (Oor p q) = Oor (toNNF p) (toNNF q)
+  toNNF p = p
+#+end_src 
