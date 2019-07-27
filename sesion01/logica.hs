@@ -47,3 +47,12 @@ numObin phi = case phi of
      Oand p q -> numObin p + numObin q + 1
      Oor p q -> numObin p + numObin q + 1
      Oimp p q -> numObin p + numObin q + 1
+
+toNNF :: PL -> PL
+toNNF phi = case quitaImp phi of -- Usando recursion estructural sobre phi
+  Oneg (Oand p q) -> toNNF $ Oor (Oneg $ toNNF p) (Oneg $ toNNF q)
+  Oneg (Oor p q) -> toNNF $ Oand (Oneg $ toNNF p) (Oneg $ toNNF q)
+  Oneg (Oneg p) -> toNNF p
+  Oand p q -> Oand (toNNF p) (toNNF q)
+  Oor p q -> Oor (toNNF p) (toNNF q)
+  p -> p

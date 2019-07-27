@@ -113,6 +113,27 @@ La sintaxis para crear nuestros módulos de Haskell es *module <nombre módulo> 
 module Proposicional
   where
 #+end_src
+** Funciones
+*** Potencia de un número
+#+begin_src haskell
+pote :: Int -> Int -> Int
+#+end_src
+*** Factorial de un número
+#+begin_src haskell
+fact :: Integer -> Integer
+#+end_src
+*** Número de elementos de una lista
+#+begin_src haskell
+tam :: [a] -> Int
+#+end_src
+*** Primeros n elementos de una lista
+#+begin_src haskell
+primN :: [a] -> Int -> [a]
+#+end_src
+*** Elementos de una lista mayores a un elemento¡
+#+begin_src haskell
+mayores :: Ord a => [a] -> a -> [a]
+#+end_src
 ** Tipos propios
 Haskell tiene definidos sus tipos primitivos, pero ¿Cómo los creamos? Una forma
 es utilizando la palabra clave *data* 
@@ -132,27 +153,6 @@ prod :: Natural -> Natural -> Natural
 *** Potencia
 #+begin_src haskell
 potN :: Natural -> Natural -> Natural
-#+end_src
-** Funciones
-*** Potencia de un número
-#+begin_src haskell
-pote :: Int -> Int -> Int
-#+end_src
-*** Factorial de un número
-#+begin_src haskell
-fact :: Integer -> Integer
-#+end_src
-*** Número de elementos de una lista
-#+begin_src haskell
-tam :: [a] -> Int
-#+end_src
-*** Primeros n elementos de una lista
-#+begin_src haskell
-primN :: [a] -> Int -> [a]
-#+end_src
-*** Elementos mayores a un elemento en una lista
-#+begin_src haskell
-mayores :: Ord a => [a] -> a -> [a]
 #+end_src
 ** Más allá
 Esta es una introducción a haskell muy muy básica.
@@ -186,11 +186,11 @@ numOp :: PL -> Int
 numOp phi = case phi of
      Top -> 0
      Bot -> 0
-     Var p -> 0
-     Oneg p -> numOp p + 1
-     Oand p q -> numOp p + numOp q + 1
-     Oor p q -> numOp p + numOp q + 1
-     Oimp p q -> numOp p + numOp q + 1
+     Var v -> 0
+     Oneg alpha -> numOp alpha + 1
+     Oand alpha beta -> numOp alpha + numOp beta + 1
+     Oor alpha beta -> numOp alpha + numOp beta + 1
+     Oimp alpha beta -> numOp alpha + numOp beta + 1
 #+end_src
 *** Elimina implicaciones
 #+begin_src haskell
@@ -198,11 +198,11 @@ quitaImp :: PL -> PL
 quitaImp phi = case phi of
      Top -> Top
      Bot -> Bot
-     Var p -> Var p
-     Oneg p -> Oneg $ quitaImp p
-     Oand p q -> Oand (quitaImp p) (quitaImp q)
-     Oor p q -> Oor (quitaImp p) (quitaImp q)
-     Oimp p q -> Oor (Oneg $ quitaImp p) (quitaImp q)
+     Var v -> Var v
+     Oneg alpha -> Oneg $ quitaImp alpha
+     Oand alpha beta -> Oand (quitaImp alpha) (quitaImp beta)
+     Oor alpha beta -> Oor (quitaImp alpha) (quitaImp beta)
+     Oimp alpha beta -> Oor (Oneg $ quitaImp alpha) (quitaImp beta)
 #+end_src
 *** Número de operadores binarios
 #+begin_src haskell
@@ -210,20 +210,51 @@ numObin :: PL -> Int
 numObin phi = case phi of
      Top -> 0
      Bot -> 0
-     Var p -> 0
-     Oneg p -> numObin p
-     Oand p q -> numObin p + numObin q + 1
-     Oor p q -> numObin p + numObin q + 1
-     Oimp p q -> numObin p + numObin q + 1
+     Var v -> 0
+     Oneg alpha -> numObin alpha
+     Oand alpha beta -> numObin alpha + numObin beta + 1
+     Oor alpha beta -> numObin alpha + numObin beta + 1
+     Oimp alpha beta -> numObin alpha + numObin beta + 1
 #+end_src
 *** Forma Normal Negativa
 #+begin_src haskell
+-- Precondicion: no debe tener implicaciones
+noImp2NNF :: PL -> PL
+noImp2NNF phi = case phi of
+  -- Casos base:
+  Top -> phi
+  Bot -> phi
+  Var v -> Var v
+  -- Casos recursivos:
+  Oneg alpha -> case alpha of
+    -- Casos bases (alpha)
+    Top -> Bot
+    Bot -> Top
+    Var v -> Oneg (Var v)
+    -- Casos recursivos (alpha)
+    Oneg beta -> noImp2NNF beta
+    Oand beta gamma -> noImp2NNF (Oor (Oneg beta) (Oneg gamma))
+    Oor beta gamma -> noImp2NNF (Oand (Oneg beta) (Oneg gamma))
+
+  Oand alpha beta -> Oand (noImp2NNF alpha) (noImp2NNF beta)
+  Oor alpha beta -> Oor (noImp2NNF alpha) (noImp2NNF beta)
+
+-- Función que transforma una formula a su forma normal de negación.
+-- Precondición: ninguna.
 toNNF :: PL -> PL
-toNNF p = toNNF $ quitaImp p where
-  toNNF (Oneg (Oand p q)) = toNNF $ Oor (Oneg $ toNNF p) (Oneg $ toNNF q)
-  toNNF (Oneg (Oor p q)) = toNNF $ Oand (Oneg $ toNNF p) (Oneg $ toNNF q)
-  toNNF (Oneg (Oneg p)) = toNNF p
-  toNNF (Oand p q) = Oand (toNNF p) (toNNF q)
-  toNNF (Oor p q) = Oor (toNNF p) (toNNF q)
-  toNNF p = p
+toNNF = noImp2NNF . quitaImp -- Composicion de funciones.
 #+end_src 
+* Ejercicio Semanal
+** Funciones
+*** Ultimos n elementos de una lista
+#+begin_src haskell
+ultimN :: [a] -> Int -> [a]
+#+end_src
+*** Elementos de una lista menores a un elemento
+#+begin_src haskell
+menores :: Ord a => [a] -> a -> [a]
+#+end_src
+*** Lista de variables de una formula
+#+begin_src haskell 
+varsOf :: PL -> [PL]
+#+end_src

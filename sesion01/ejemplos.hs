@@ -29,9 +29,11 @@ tam l = case l of
 -- Función que regresa el n elementos de una lista
 
 primN :: [a] -> Int -> [a]
-primN (l:ls) n = case n of
+primN li n = case n of
   0 -> []
-  m -> [l] ++ primN ls (n-1)
+  m -> case li of
+    [] -> error $ "Lista vacia" 
+    (l:ls) -> [l] ++ primN ls (n-1)
 
 -- Función que regresa los elementos que son mayores a un número dado
 
