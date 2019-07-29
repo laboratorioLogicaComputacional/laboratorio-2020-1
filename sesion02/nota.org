@@ -1,0 +1,108 @@
+#+LATEX_CLASS: article
+#+LANGUAGE: es
+#+LATEX_HEADER: \usepackage[AUTO]{babel}
+#+LATEX_HEADER: \usepackage{fancyvrb}
+#+OPTIONS: toc:nil
+#+DATE:
+#+AUTHOR: Dr. Miguel Carrillo Barajas \\
+#+AUTHOR: Sara Doris Montes Incin \\
+#+AUTHOR: Mauricio Esquivel Reyes \\
+#+TITLE: Sesión de laboratorio 02 \\
+#+TITLE: Lógica Computacional
+
+* LaTeX
+** Introducción
+\LaTeX{} es un sistema de composición de textos, orientados a la creación de documentos escritos que presentan una alta calidad tipográfica.
+\LaTeX{} presupone una filosofía de trabajo diferente a la de los procesadores de texto habituales (conocidos como WYSIWYG, es decir, «lo que ves es lo que obtienes») y se basa en instrucciones. 
+El modo en que LaTeX interpreta la «forma» que debe tener el documento es mediante etiquetas. Por ejemplo, documentclass{article} le dice a \LaTeX{} que el documento que va a procesar es un artículo.
+Después de haber creado un archivo de texto plano hay que compilarlo para que nos de el PDF.
+Los reportes de las prácticas de laboratorio se entregarán en \LaTeX{}.
+** Uso
+Pueden obtener \LaTeX{} en la siguiente dirección https://www.latex-project.org/get/
+O pueden utilizar https://www.overleaf.com el cual te deja editar archivos, 
+visualizarlos en el instante y  pueden editarlo entre varias personas.
+** Ejemplo
+#+begin_src
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\author{Hambone Fakenamington \\
+Carla Mercedes Benz-Brown}
+\title{Reporte Práctica XX \\
+Lógica Computacional}
+\date{}
+\begin{document}
+\maketitle
+\section{Secciones y subsecciones}
+\subsection Listas
+\begin{itemize}
+\item Uno
+\item Two
+\item Trois
+\end{itemize}
+\subsection{Enumeraciones}
+\begin{enumerate}
+\item Premier
+\item Second
+\item Tercero
+\begin{itemize}
+\item A
+\item B
+\item C
+\end{itemize}
+\end{enumerate}
+\subsection{Formulas matemáticas}
+Para escribirlas sobre la linea de texto es entre dos \$ \\
+La formula $p$ esta en forma... \\
+Para resaltarlas se escribe entre corchetes de la siguiente manera
+\[ \prod_{i=a}^{b} f(i) \]
+\end{document}
+#+end_src
+* Lógica
+** Sintaxis
+Esta es la sintaxis de la Lógica Proposicional que utilizaremos. 
+\[PL ::= <ProposiciónAtómica> | \neg PL | (PL \land PL) | (PL \lor PL) | (PL \to PL) \]
+\[<ProposiciónAtómica> ::= \top | \bot | <VariableProposicional>\]
+\[<VariableProposicional> ::= v<Indice>\]
+\[ <Indice> ::= [i | i \in \mathbb{N}]\]
+
+** Definición en Haskell
+#+begin_src haskell
+-- Tipo de dato indice
+type Indice = Int
+
+-- Tipo de dato fórmula
+data PL = Top | Bot 
+              | Var Indice | Oneg PL 
+              | Oand PL PL | Oor PL PL 
+              | Oimp PL PL deriving Eq
+#+end_src
+
+** Funciones
+*** Número de variables
+#+begin_src haskell
+numVar :: PL -> Int
+#+end_src
+*** Conjunciones de una formula
+#+begin_src haskell
+conj :: PL -> [PL]
+#+end_src
+*** Número de disyunciones de una formula
+#+begin_src haskell
+numDis :: PL -> Int
+#+end_src
+*** isInNFF
+Función que nos indica si una formula esta en forma normal de negación.
+#+begin_src haskell
+isInNFF :: PL -> Bool
+#+end_src
+* Ejercicio Semanal
+** Funciones
+*** Disyunciones de una formula
+#+begin_src haskell
+disy :: PL -> [PL]
+#+end_src
+*** Número de conjunciones de una formula
+#+begin_src haskell
+numConj :: PL -> Int
+#+end_src
