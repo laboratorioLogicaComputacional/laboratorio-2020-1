@@ -10,7 +10,7 @@
 #+TITLE: Sesión de laboratorio 01 \\
 #+TITLE: Lógica Computacional
 
-* Introducc1ión
+* Introducción
 ** ¿Qué es Haskell?
 Haskell es un lenguaje de programación multi-propósito puramente funcional
 con semántica no estricta y tipado fuerte.
