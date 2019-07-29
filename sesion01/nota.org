@@ -10,7 +10,7 @@
 #+TITLE: Sesión de laboratorio 01 \\
 #+TITLE: Lógica Computacional
 
-* Introducción
+* Introducc1ión
 ** ¿Qué es Haskell?
 Haskell es un lenguaje de programación multi-propósito puramente funcional
 con semántica no estricta y tipado fuerte.
@@ -63,7 +63,7 @@ Haskell tiene definido los siguientes tipos:
      - fst
      - snd
 
-Para conocer el tipo de una expresión  en haskell solo se necesita hacer:
+Para conocer el tipo de una expresión en haskell solo se necesita hacer:
 #+begin_src haskell
 > :t 5
 > :t "Hola mundo"
@@ -183,61 +183,19 @@ data PL = Top | Bot
 *** Número de operadores
 #+begin_src haskell
 numOp :: PL -> Int
-numOp phi = case phi of
-     Top -> 0
-     Bot -> 0
-     Var v -> 0
-     Oneg alpha -> numOp alpha + 1
-     Oand alpha beta -> numOp alpha + numOp beta + 1
-     Oor alpha beta -> numOp alpha + numOp beta + 1
-     Oimp alpha beta -> numOp alpha + numOp beta + 1
 #+end_src
 *** Elimina implicaciones
 #+begin_src haskell
 quitaImp :: PL -> PL
-quitaImp phi = case phi of
-     Top -> Top
-     Bot -> Bot
-     Var v -> Var v
-     Oneg alpha -> Oneg $ quitaImp alpha
-     Oand alpha beta -> Oand (quitaImp alpha) (quitaImp beta)
-     Oor alpha beta -> Oor (quitaImp alpha) (quitaImp beta)
-     Oimp alpha beta -> Oor (Oneg $ quitaImp alpha) (quitaImp beta)
 #+end_src
 *** Número de operadores binarios
 #+begin_src haskell
 numObin :: PL -> Int
-numObin phi = case phi of
-     Top -> 0
-     Bot -> 0
-     Var v -> 0
-     Oneg alpha -> numObin alpha
-     Oand alpha beta -> numObin alpha + numObin beta + 1
-     Oor alpha beta -> numObin alpha + numObin beta + 1
-     Oimp alpha beta -> numObin alpha + numObin beta + 1
 #+end_src
 *** Forma Normal Negativa
 #+begin_src haskell
 -- Precondicion: no debe tener implicaciones
 noImp2NNF :: PL -> PL
-noImp2NNF phi = case phi of
-  -- Casos base:
-  Top -> phi
-  Bot -> phi
-  Var v -> Var v
-  -- Casos recursivos:
-  Oneg alpha -> case alpha of
-    -- Casos bases (alpha)
-    Top -> Bot
-    Bot -> Top
-    Var v -> Oneg (Var v)
-    -- Casos recursivos (alpha)
-    Oneg beta -> noImp2NNF beta
-    Oand beta gamma -> noImp2NNF (Oor (Oneg beta) (Oneg gamma))
-    Oor beta gamma -> noImp2NNF (Oand (Oneg beta) (Oneg gamma))
-
-  Oand alpha beta -> Oand (noImp2NNF alpha) (noImp2NNF beta)
-  Oor alpha beta -> Oor (noImp2NNF alpha) (noImp2NNF beta)
 
 -- Función que transforma una formula a su forma normal de negación.
 -- Precondición: ninguna.

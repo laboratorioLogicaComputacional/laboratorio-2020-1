@@ -6,53 +6,63 @@
 module EjemplosLogica1
   where
 
--- Tipo de dato indice
-type Indice = Int
-
--- Tipo de dato fórmula
-data PL = Top | Bot 
-              | Var Indice | Oneg PL 
-              | Oand PL PL | Oor PL PL 
-              | Oimp PL PL deriving (Eq, Show)
+import SintaxisPL
 
 -- Función que nos da el número de operadores en una formula
 numOp :: PL -> Int
 numOp phi = case phi of
-     Top -> 0
-     Bot -> 0
-     Var p -> 0
-     Oneg p -> numOp p + 1
-     Oand p q -> numOp p + numOp q + 1
-     Oor p q -> numOp p + numOp q + 1
-     Oimp p q -> numOp p + numOp q + 1
+  Top -> 0
+  Bot -> 0
+  Var v -> 0
+  Oneg alpha -> numOp alpha + 1
+  Oand alpha beta -> numOp alpha + numOp beta + 1
+  Oor alpha beta -> numOp alpha + numOp beta + 1
+  Oimp alpha beta -> numOp alpha + numOp beta + 1
 
 -- Función que elimina las implicaciones de una formula
 quitaImp :: PL -> PL
 quitaImp phi = case phi of
-     Top -> Top
-     Bot -> Bot
-     Var p -> Var p
-     Oneg p -> Oneg $ quitaImp p
-     Oand p q -> Oand (quitaImp p) (quitaImp q)
-     Oor p q -> Oor (quitaImp p) (quitaImp q)
-     Oimp p q -> Oor (Oneg $ quitaImp p) (quitaImp q)
+  Top -> Top
+  Bot -> Bot
+  Var v -> Var v
+  Oneg alpha -> Oneg $ quitaImp alpha
+  Oand alpha beta -> Oand (quitaImp alpha) (quitaImp beta)
+  Oor alpha beta -> Oor (quitaImp alpha) (quitaImp beta)
+  Oimp alpha beta -> Oor (Oneg $ quitaImp alpha) (quitaImp beta)
 
 -- Función que cuenta los operadores binarios en una formula
 numObin :: PL -> Int
 numObin phi = case phi of
-     Top -> 0
-     Bot -> 0
-     Var p -> 0
-     Oneg p -> numObin p
-     Oand p q -> numObin p + numObin q + 1
-     Oor p q -> numObin p + numObin q + 1
-     Oimp p q -> numObin p + numObin q + 1
+  Top -> 0
+  Bot -> 0
+  Var v -> 0
+  Oneg alpha -> numObin alpha
+  Oand alpha beta -> numObin alpha + numObin beta + 1
+  Oor alpha beta -> numObin alpha + numObin beta + 1
+  Oimp alpha beta -> numObin alpha + numObin beta + 1
 
+-- Precondicion: no debe tener implicaciones
+noImp2NNF :: PL -> PL
+noImp2NNF phi = case phi of
+  -- Casos base:
+  Top -> phi
+  Bot -> phi
+  Var v -> Var v
+  -- Casos recursivos:
+  Oneg alpha -> case alpha of
+    -- Casos bases (alpha)
+    Top -> Bot
+    Bot -> Top
+    Var v -> Oneg (Var v)
+    -- Casos recursivos (alpha)
+    Oneg beta -> noImp2NNF beta
+    Oand beta gamma -> noImp2NNF (Oor (Oneg beta) (Oneg gamma))
+    Oor beta gamma -> noImp2NNF (Oand (Oneg beta) (Oneg gamma))
+
+  Oand alpha beta -> Oand (noImp2NNF alpha) (noImp2NNF beta)
+  Oor alpha beta -> Oor (noImp2NNF alpha) (noImp2NNF beta)
+
+-- Función que transforma una formula a su forma normal de negación.
+-- Precondición: ninguna.
 toNNF :: PL -> PL
-toNNF phi = case quitaImp phi of -- Usando recursion estructural sobre phi
-  Oneg (Oand p q) -> toNNF $ Oor (Oneg $ toNNF p) (Oneg $ toNNF q)
-  Oneg (Oor p q) -> toNNF $ Oand (Oneg $ toNNF p) (Oneg $ toNNF q)
-  Oneg (Oneg p) -> toNNF p
-  Oand p q -> Oand (toNNF p) (toNNF q)
-  Oor p q -> Oor (toNNF p) (toNNF q)
-  p -> p
+toNNF = noImp2NNF . quitaImp -- Composicion de funciones.
