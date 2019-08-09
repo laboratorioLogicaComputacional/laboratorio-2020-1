@@ -130,7 +130,7 @@ tam :: [a] -> Int
 #+begin_src haskell
 primN :: [a] -> Int -> [a]
 #+end_src
-*** Elementos de una lista mayores a un elemento¡
+*** Elementos de una lista mayores a un elemento
 #+begin_src haskell
 mayores :: Ord a => [a] -> a -> [a]
 #+end_src
@@ -159,7 +159,7 @@ Esta es una introducción a haskell muy muy básica.
 Para seguir aprendiendo hay bastante material 
 en https://www.haskell.org/documentation
 
-* Lógica
+* Lógica Proposicional
 ** Sintaxis
 Esta es la sintaxis de la Lógica Proposicional que utilizaremos. 
 \[PL ::= <ProposiciónAtómica> | \neg PL | (PL \land PL) | (PL \lor PL) | (PL \to PL) \]
@@ -192,16 +192,6 @@ quitaImp :: PL -> PL
 #+begin_src haskell
 numObin :: PL -> Int
 #+end_src
-*** Forma Normal Negativa
-#+begin_src haskell
--- Precondicion: no debe tener implicaciones
-noImp2NNF :: PL -> PL
-
--- Función que transforma una formula a su forma normal de negación.
--- Precondición: ninguna.
-toNNF :: PL -> PL
-toNNF = noImp2NNF . quitaImp -- Composicion de funciones.
-#+end_src 
 * Ejercicio Semanal
 ** Funciones
 *** Ultimos n elementos de una lista
