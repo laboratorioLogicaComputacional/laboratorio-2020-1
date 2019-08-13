@@ -41,7 +41,19 @@ numDis phi = case phi of
   Oor alpha beta -> numDis alpha + numDis beta + 1
   Oimp alpha beta -> numDis alpha + numDis beta  
 
+-- Función que elimina las conjunciones de una formula
+quitaConj :: PL -> PL
+quitaConj phi = case phi of
+  Top -> Top
+  Bot -> Bot
+  Var x -> Var x
+  Oneg alpha -> Oneg (quitaConj alpha)
+  Oand alpha beta -> Oneg (Oor (Oneg (quitaConj alpha)) (Oneg (quitaConj beta)))
+  Oor alpha beta -> Oor (quitaConj alpha) (quitaConj beta)
+  Oimp alpha beta -> Oimp (quitaConj alpha) (quitaConj beta)
+
 -- Función que nos indica si una formula esta en forma normal de negación.
+{-
 isInNFF :: PL -> Bool
 isInNFF phi = case phi of
  Top-> True
@@ -53,3 +65,4 @@ isInNFF phi = case phi of
  Oor alpha beta -> isInNFF alpha && isInNFF beta
  Oand alpha beta -> isInNFF alpha && isInNFF beta
  Oimp _ _ -> False
+-}

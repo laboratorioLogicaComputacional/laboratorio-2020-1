@@ -91,10 +91,9 @@ conj :: PL -> [PL]
 #+begin_src haskell
 numDis :: PL -> Int
 #+end_src
-*** isInNFF
-Función que nos indica si una formula esta en forma normal de negación.
+*** Elimina conjunciones
 #+begin_src haskell
-isInNFF :: PL -> Bool
+quitaConj :: PL -> PL
 #+end_src
 * Ejercicio Semanal
 ** Funciones
@@ -105,4 +104,8 @@ disy :: PL -> [PL]
 *** Número de conjunciones de una formula
 #+begin_src haskell
 numConj :: PL -> Int
+#+end_src
+*** Elimina disyunciones
+#+begin_src haskell 
+quitaDisy :: PL -> PL
 #+end_src
