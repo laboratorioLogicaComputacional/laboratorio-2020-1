@@ -117,22 +117,37 @@ module Proposicional
 *** Potencia de un número
 #+begin_src haskell
 pote :: Int -> Int -> Int
+pote n m = case m of
+  0 -> 1
+  p -> n * (pote n (m-1))
 #+end_src
 *** Factorial de un número
 #+begin_src haskell
 fact :: Integer -> Integer
+fact n = case n of
+  0 -> 1
+  m -> n * fact (n-1)
 #+end_src
 *** Número de elementos de una lista
 #+begin_src haskell
 tam :: [a] -> Int
+tam l = case l of
+  [] -> 0
+  (l:ls) -> tam ls + 1
 #+end_src
 *** Primeros n elementos de una lista
 #+begin_src haskell
 primN :: [a] -> Int -> [a]
+primN li n = case n of
+  0 -> []
+  m -> case li of
+    [] -> error $ "Lista vacia" 
+    (l:ls) -> [l] ++ primN ls (n-1)
 #+end_src
 *** Elementos de una lista mayores a un elemento
 #+begin_src haskell
 mayores :: Ord a => [a] -> a -> [a]
+mayores l n = [m | m <- l, m > n]
 #+end_src
 ** Tipos propios
 Haskell tiene definidos sus tipos primitivos, pero ¿Cómo los creamos? Una forma
@@ -145,14 +160,23 @@ sus funciones.
 *** Suma 
 #+begin_src haskell
 suma :: Natural -> Natural -> Natural
+suma x y = case y of
+  Cero -> x
+  Suc z -> Suc (suma x z)
 #+end_src
 *** Producto
 #+begin_src haskell
 prod :: Natural -> Natural -> Natural
+prod x y = case y of
+  Cero -> Cero
+  Suc z -> suma (prod x z) x
 #+end_src
 *** Potencia
 #+begin_src haskell
 potN :: Natural -> Natural -> Natural
+potN x y = case y of
+  Cero -> Suc Cero
+  Suc z -> prod (potN x z) x
 #+end_src
 ** Más allá
 Esta es una introducción a haskell muy muy básica.
@@ -183,14 +207,38 @@ data PL = Top | Bot
 *** Número de operadores
 #+begin_src haskell
 numOp :: PL -> Int
+numOp phi = case phi of
+  Top -> 0
+  Bot -> 0
+  Var v -> 0
+  Oneg alpha -> numOp alpha + 1
+  Oand alpha beta -> numOp alpha + numOp beta + 1
+  Oor alpha beta -> numOp alpha + numOp beta + 1
+  Oimp alpha beta -> numOp alpha + numOp beta + 1
 #+end_src
 *** Elimina implicaciones
 #+begin_src haskell
 quitaImp :: PL -> PL
+quitaImp phi = case phi of
+  Top -> Top
+  Bot -> Bot
+  Var v -> Var v
+  Oneg alpha -> Oneg $ quitaImp alpha
+  Oand alpha beta -> Oand (quitaImp alpha) (quitaImp beta)
+  Oor alpha beta -> Oor (quitaImp alpha) (quitaImp beta)
+  Oimp alpha beta -> Oor (Oneg $ quitaImp alpha) (quitaImp beta)
 #+end_src
 *** Número de operadores binarios
 #+begin_src haskell
 numObin :: PL -> Int
+numObin phi = case phi of
+  Top -> 0
+  Bot -> 0
+  Var v -> 0
+  Oneg alpha -> numObin alpha
+  Oand alpha beta -> numObin alpha + numObin beta + 1
+  Oor alpha beta -> numObin alpha + numObin beta + 1
+  Oimp alpha beta -> numObin alpha + numObin beta + 1
 #+end_src
 * Ejercicio Semanal
 ** Funciones
