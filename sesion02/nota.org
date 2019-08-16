@@ -83,6 +83,10 @@ data PL = Top | Bot
 #+begin_src haskell
 numVar :: PL -> Int
 #+end_src
+*** Hay conjunciones
+#+begin_src haskell
+hayConjunciones :: PL -> Bool
+#+end_src
 *** Conjunciones de una formula
 #+begin_src haskell
 conj :: PL -> [PL]
@@ -97,6 +101,10 @@ quitaConj :: PL -> PL
 #+end_src
 * Ejercicio Semanal
 ** Funciones
+*** Hay implicación
+#+begin_src haskell
+hayImplicaciones :: PL -> Bool
+#+end_src
 *** Disyunciones de una formula
 #+begin_src haskell
 disy :: PL -> [PL]

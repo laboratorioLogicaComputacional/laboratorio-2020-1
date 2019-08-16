@@ -19,6 +19,17 @@ numVar phi = case phi of
   Oor alpha beta -> numVar alpha + numVar beta
   Oimp alpha beta -> numVar alpha + numVar beta
 
+-- Función que nos indica si hay conjunciones en una formula
+hayConjunciones :: PL -> Bool
+hayConjunciones phi = case phi of
+  Top -> False
+  Bot -> False
+  Var _ -> False
+  Oneg alpha -> hayConjunciones alpha
+  Oand alpha beta -> True || hayConjunciones alpha || hayConjunciones beta
+  Oor alpha beta ->  hayConjunciones alpha || hayConjunciones beta
+  Oimp alpha beta -> hayConjunciones alpha || hayConjunciones beta
+  
 -- Función que nos da las conjunciones de una formula
 conj :: PL -> [PL]
 conj phi = case phi of
