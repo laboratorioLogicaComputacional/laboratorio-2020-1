@@ -82,22 +82,62 @@ data PL = Top | Bot
 *** Número de variables
 #+begin_src haskell
 numVar :: PL -> Int
+numVar phi = case phi of
+  Top -> 0
+  Bot -> 0
+  Var _ -> 1
+  Oneg alpha -> numVar alpha
+  Oand alpha beta -> numVar alpha + numVar beta
+  Oor alpha beta -> numVar alpha + numVar beta
+  Oimp alpha beta -> numVar alpha + numVar beta
 #+end_src
 *** Hay conjunciones
 #+begin_src haskell
 hayConjunciones :: PL -> Bool
+hayConjunciones phi = case phi of
+  Top -> False
+  Bot -> False
+  Var _ -> False
+  Oneg alpha -> hayConjunciones alpha
+  Oand alpha beta -> True
+  Oor alpha beta ->  hayConjunciones alpha || hayConjunciones beta
+  Oimp alpha beta -> hayConjunciones alpha || hayConjunciones beta
 #+end_src
 *** Conjunciones de una formula
 #+begin_src haskell
 conj :: PL -> [PL]
+conj phi = case phi of
+  Top -> []
+  Bot -> []
+  Var _ -> []
+  Oneg alpha -> conj alpha
+  Oand alpha beta -> [Oand alpha beta] ++ conj alpha ++ conj beta
+  Oor alpha beta -> conj alpha ++ conj beta
+  Oimp alpha beta -> conj alpha ++ conj beta
 #+end_src
 *** Número de disyunciones de una formula
 #+begin_src haskell
 numDis :: PL -> Int
+numDis phi = case phi of
+  Top -> 0
+  Bot -> 0
+  Var _ -> 0
+  Oneg alpha -> numDis alpha
+  Oand alpha beta -> numDis alpha + numDis beta 
+  Oor alpha beta -> numDis alpha + numDis beta + 1
+  Oimp alpha beta -> numDis alpha + numDis beta
 #+end_src
 *** Elimina conjunciones
 #+begin_src haskell
 quitaConj :: PL -> PL
+quitaConj phi = case phi of
+  Top -> Top
+  Bot -> Bot
+  Var x -> Var x
+  Oneg alpha -> Oneg (quitaConj alpha)
+  Oand alpha beta -> Oneg (Oor (Oneg (quitaConj alpha)) (Oneg (quitaConj beta)))
+  Oor alpha beta -> Oor (quitaConj alpha) (quitaConj beta)
+  Oimp alpha beta -> Oimp (quitaConj alpha) (quitaConj beta)
 #+end_src
 * Ejercicio Semanal
 ** Funciones
