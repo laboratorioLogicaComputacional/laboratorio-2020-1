@@ -1,0 +1,84 @@
+#+LATEX_CLASS: article
+#+LANGUAGE: es
+#+LATEX_HEADER: \usepackage[AUTO]{babel}
+#+LATEX_HEADER: \usepackage{fancyvrb}
+#+OPTIONS: toc:nil
+#+DATE:
+#+AUTHOR: Dr. Miguel Carrillo Barajas \\
+#+AUTHOR: Sara Doris Montes Incin \\
+#+AUTHOR: Mauricio Esquivel Reyes \\
+#+TITLE: Sesión de laboratorio 03 \\
+#+TITLE: Lógica Computacional
+
+* Lógica
+** Implementación de la semántica
+*** Valuaciones
+ + Def. Decimos que \sigma es una valuación si $\sigma: X \rightarrow {0,1}$ y $\emptyset \neq X \subseteq Var$.
+   En particular, si $\sigma: Var \rightarrow {0,1}$  
+#+begin_src haskell 
+type Valuacion = Indice -> Bool
+#+end_src
+ * Def. Sean $\sigma: Var \rightarrow {0,1}$ una valuación  y $\phi \in PL$.
+ Definimos la relación  $\sigma \models \phi$, usando recursión  sobre la estructura de \phi
+#+begin_src haskell
+satPL :: Valuacion -> PL -> Bool
+#+end_src
+*** Modelos
+ * Def. m es un modelo si $m \subseteq Var$.
+ satMod m phi = True sii $m \models \varphi$
+#+begin_src haskell 
+type Modelo = [Indice]
+#+end_src
+ * Def. Sean m un modelo y $\phi \in PL$.
+ Definimos la relación  $m \models \phi$, usando recursión  sobre la estructura de \phi
+#+begin_src haskell
+satMod :: Modelo -> PL -> Bool
+#+end_src
+*** Modelo a Valuacion
+#+begin_src haskell
+modeloToValuacion :: Modelo -> Valuacion
+modeloToValuacion m = sigma_m
+    where
+    sigma_m :: Valuacion
+    sigma_m v = elem v m
+#+end_src
+ ¿Qué resultado se espera de satPL \sigma \phi == satPL \sigma (toNNF \phi)?
+*** Conjunto potencia
+El conjunto potencia de un conjunto dado son todos los subconjuntos de dicho conjunto.
+#+begin_src haskell
+powerSet :: [t] -> [[t]]
+#+end_src
+*** Implicación Lógica (Consecuencia Semántica)
+Sea $\sigma$ una valuación, $\phi$ una proposición de la LP y $\gamma$ un subconjunto de proposiciones de la LP.
+Decimos que $\gamma$ implica lógicamente a $\phi$ si y solo si todos los modelos que satisfacen a $\gamma$ también satisfacen a $\phi$.  
+#+begin_src haskell
+impLogicamente :: [PL] -> PL -> Bool
+impLogicamente cGamma phi = and [(satMod m alpha) `opImp` (satMod m phi) | 
+                                 alpha <- cGamma, 
+                                 m <- powerSet $ varsOf alpha] where
+  opImp :: Bool -> Bool -> Bool
+  opImp g h = not g || h
+#+end_src
+*** Equivalencia Lógica
+Sean $\phi$ y $\psi$ formulas de la LP, decimos que son lógicamente equivalentes si y solo si
+$\phi \models \psi$ y $\psi \models \psi$
+#+begin_src haskell
+logEquivalentes :: PL -> PL -> Bool
+#+end_src
+* Práctica urgente
+** Variables de una formulas
+#+begin_src haskell
+varsOf :: PL -> [Indice]
+#+end_src
+** Hay conjunciones
+#+begin_src haskell
+hayConjunciones :: PL -> Bool
+#+end_src
+** Disyunciones de una formula
+#+begin_src haskell
+disy :: PL -> [PL]
+#+end_src
+** Elimina implicaciones
+#+begin_src haskell
+quitaImp :: PL -> PL
+#+end_src
