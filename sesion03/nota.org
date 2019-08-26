@@ -22,6 +22,14 @@ type Valuacion = Indice -> Bool
  Definimos la relación  $\sigma \models \phi$, usando recursión  sobre la estructura de \phi
 #+begin_src haskell
 satPL :: Valuacion -> PL -> Bool
+satPL sigma phi = case phi of
+ Top -> True
+ Bot -> False
+ Var alpha -> (sigma alpha)
+ Oneg alpha -> not(satPL sigma alpha)
+ Oand alpha beta -> (satPL sigma alpha) && (satPL sigma beta)
+ Oor alpha beta -> (satPL sigma alpha) || (satPL sigma beta)
+ Oimp alpha beta -> not(satPL sigma alpha) || (satPL sigma beta)
 #+end_src
 *** Modelos
  * Def. m es un modelo si $m \subseteq Var$.
@@ -33,6 +41,14 @@ type Modelo = [Indice]
  Definimos la relación  $m \models \phi$, usando recursión  sobre la estructura de \phi
 #+begin_src haskell
 satMod :: Modelo -> PL -> Bool
+satMod m phi = case phi of
+ Top -> True
+ Bot -> False
+ Var n -> elem n m
+ Oneg alpha -> not(satMod m alpha)
+ Oand alpha beta -> (satMod m alpha) && (satMod m beta)
+ Oor alpha beta -> (satMod m alpha) || (satMod m beta)
+ Oimp alpha beta -> not(satMod m alpha) || (satMod m beta)
 #+end_src
 *** Modelo a Valuacion
 #+begin_src haskell
@@ -47,6 +63,10 @@ modeloToValuacion m = sigma_m
 El conjunto potencia de un conjunto dado son todos los subconjuntos de dicho conjunto.
 #+begin_src haskell
 powerSet :: [t] -> [[t]]
+powerSet l  = case l of
+  []   -> [[]]
+  x:xs -> powerXS ++ [x:w | w <- powerXS] where
+    powerXS = powerSet xs 
 #+end_src
 *** Implicación Lógica (Consecuencia Semántica)
 Sea $\sigma$ una valuación, $\phi$ una proposición de la LP y $\gamma$ un subconjunto de proposiciones de la LP.
@@ -64,6 +84,7 @@ Sean $\phi$ y $\psi$ formulas de la LP, decimos que son lógicamente equivalente
 $\phi \models \psi$ y $\psi \models \psi$
 #+begin_src haskell
 logEquivalentes :: PL -> PL -> Bool
+logEquivalentes phi psi = (impLogicamente [phi] psi) && (impLogicamente [psi] phi)
 #+end_src
 * Práctica urgente
 ** Variables de una formulas
