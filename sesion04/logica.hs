@@ -8,15 +8,33 @@ module EjemplosLogica4
 
 import SintaxisPLI
 
---Ejercicio. Definir una funcion recursivia que despliegue formulas de la PLI, 
-showPLI :: PLI -> String
 -- Muestra una formula de la PLI
+showPLI :: PLI -> String
 showPLI phi = case phi of
-    Bot                                     -> "FF" 
-    Var v                                   -> "v"++show v
-    Oimp Bot Bot                            -> "TT" -- toLuk(Top)= ~Bot
-    (p `Oimp` (q `Oimp` Bot)) `Oimp` Bot    -> "("++ (showPLI p) ++" & "++ (showPLI q) ++")" -- toLuk(f ^ g) = toLuk(¬(f -> ¬g))
---     (p `Oimp` Bot) `Oimp` q                 -> "("++ (showPLI p) ++" | "++ (showPLI q) ++")" -- toLuk(f v g) = toLuk((¬f) -> g)
-    Oimp p Bot                              -> "~("++ (showPLI p) ++")" -- toLuk(¬f) = ~toLuk(f)
-    Oimp p q                                -> "("++ (showPLI p) ++" -> "++ (showPLI q) ++")" 
-    --_         -> error $ "showPLI: no definida en este caso, phi="++show phi
+  Bot                            -> "FF" 
+  Var v                          -> "v"++show v
+  -- toLuk(Top)= ~Bot
+  Oimp Bot Bot                   -> "TT"
+  -- toLuk(f ^ g) = toLuk(¬(f -> ¬g))
+  (a`Oimp`(b`Oimp`Bot))`Oimp`Bot -> "("++ (showPLI a) ++" & "++ (showPLI b) ++")"
+   -- toLuk(f v g) = toLuk((¬f) -> g)
+  (alpha `Oimp` Bot) `Oimp` beta -> "("++ (showPLI alpha) ++" | "++ (showPLI beta) ++")"
+  -- toLuk(¬f) = ~toLuk(f)
+  Oimp alpha Bot                 -> "~("++ (showPLI alpha) ++")"
+  Oimp alpha beta                -> "("++ (showPLI alpha) ++" -> "++ (showPLI beta) ++")" 
+
+-- Top en el sistema L
+oTop :: PLI
+oTop = Oimp Bot Bot
+
+-- Negación en el sistema L
+oNeg :: PLI -> PLI
+oNeg phi = Oimp phi Bot
+
+-- Disyunción en el sistema L
+oAnd :: PLI -> PLI -> PLI
+oAnd alpha beta = (alpha `Oimp` (beta `Oimp` Bot)) `Oimp` Bot 
+
+-- Conjunción en el sistema L
+oOr :: PLI -> PLI -> PLI
+oOr alpha beta = (alpha `Oimp` Bot) `Oimp` beta

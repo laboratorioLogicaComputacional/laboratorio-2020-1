@@ -96,6 +96,14 @@ lista finita de formulas $\psi_1,\psi_2,\dots,\psi_n \in$ PLI, tal que:
 **** Función que muestre las formulas
 #+begin_src haskell 
 showPLI :: PLI -> String
+showPLI phi = case phi of
+  Bot                            -> "FF" 
+  Var v                          -> "v"++show v
+  Oimp Bot Bot                   -> "TT"
+  (a`Oimp`(b`Oimp`Bot))`Oimp`Bot -> "("++ (showPLI a) ++" & "++ (showPLI b) ++")"
+  (alpha `Oimp` Bot) `Oimp` beta -> "("++ (showPLI alpha) ++" | "++ (showPLI beta) ++")"
+  Oimp alpha Bot                 -> "~("++ (showPLI alpha) ++")"
+  Oimp alpha beta                -> "("++ (showPLI alpha) ++" -> "++ (showPLI beta) ++")" 
 #+end_src
 **** Operadores faltantes
 ***** oNeg
@@ -105,15 +113,18 @@ oNeg alpha = Oimp alpha Bot
 #+end_src
 ***** oTop
 #+begin_src haskell 
-oTop :: PLI -> PLI
+oTop :: PLI
+oTop = Oimp Bot Bot
 #+end_src
 ***** oAnd
 #+begin_src haskell
-oAnd :: PLI -> PLI
+oAnd :: PLI -> PLI -> PLI
+oAnd alpha beta = (alpha `Oimp` (beta `Oimp` Bot)) `Oimp` Bot
 #+end_src
 ***** oOr
 #+begin_src haskell
-oOr :: PLI -> PLI
+oOr :: PLI -> PLI -> PLI
+oOr alpha beta = (alpha `Oimp` Bot) `Oimp` beta
 #+end_src
 * Práctica urgente
 ** Ultimos n elementos de una lista
