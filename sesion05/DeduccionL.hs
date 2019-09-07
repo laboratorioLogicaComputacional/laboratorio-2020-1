@@ -42,6 +42,7 @@ data ReglaL = Prem           -- Las premisas son validas
             | ModPon Int Int -- Es resultado de aplicar MP a dos formulas anteriores
             deriving (Eq,Show)
 -- Tipo Paso
+-- Una fomula PLI y la Regla utilizada
 type Paso = (PLI, ReglaL)
 
 -- Tipo Numero de Paso
@@ -66,9 +67,9 @@ ultimoPaso lpasos
 -- Revisa que el paso sea correcto
 checkPaso :: [PLI] -> [NumPaso] -> NumPaso -> Bool
 checkPaso lprem lpp p = case p of
-  (n, (phi, Prem)) -> phi `elem` lprem && n == nU+1
-  (n, (phi, Ax)) -> esAxiomaDeL phi && n == nU+1
-  (n, (phi, ModPon i j)) -> esModusPonens (alpha, beta, phi) && n == nU+1
+  (n, (phi, Prem)) -> phi `elem` lprem && n == nU+1 -- Revisamos que phi sea parte de lprem
+  (n, (phi, Ax)) -> esAxiomaDeL phi && n == nU+1 -- Revisamos que phi sea un axioma
+  (n, (phi, ModPon i j)) -> esModusPonens (alpha, beta, phi) && n == nU+1 -- Revisamos que phi sea resultado de hacer modus ponens con i y j
     where
       alpha = phiPasoNum i lpp
       beta = phiPasoNum j lpp
@@ -78,8 +79,8 @@ checkPaso lprem lpp p = case p of
 -- Revisa que la prueba sea correcta
 checkPrueba :: [PLI] -> [NumPaso] -> Bool
 checkPrueba lprem lpasos = case lpasos of
-  []      -> True
-  _:_     -> checkPrueba lprem lpp && checkPaso lprem lpp p
+  []      -> True -- Si la lista es vacía entonces es cierto
+  _:_     -> checkPrueba lprem lpp && checkPaso lprem lpp p -- Hacemos recursión.
   where
     n = length lpasos
     lpp = Prelude.take (n-1) lpasos
@@ -92,7 +93,7 @@ showLphi lphi= case lphi of
                     f:lf    -> showPLI f ++","++ showLphi lf
                     []      -> ""
 
--- Muestas la regla usada
+-- Muesta la regla
 showRegla :: ReglaL -> String
 showRegla r = case r of
   Prem -> "premisa"
