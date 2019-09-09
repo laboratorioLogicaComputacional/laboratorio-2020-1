@@ -67,7 +67,7 @@ Un sistema de deducción al estilo Hilbert para la PLI.
 \[PLI ::= Bot | v<Indice> | (PLI \to PLI) \]
 \[ <Indice> ::= [i | i \in \mathbb{N}]\]
 
-Sea $f \in PLI$. La negación de f se define mediante $\neg f = (f \to Bot)$
+Sea $\phi \in PLI$. La negación de \phi se define mediante $\neg \phi = (\phi \to Bot)$
 *** Definición en Haskell
 #+begin_src haskell
 --Tipo de datos para indices de variables
