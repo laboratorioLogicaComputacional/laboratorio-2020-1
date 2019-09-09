@@ -2,6 +2,7 @@
 #+LANGUAGE: es
 #+LATEX_HEADER: \usepackage[AUTO]{babel}
 #+LATEX_HEADER: \usepackage{fancyvrb}
+#+LATEX_HEADER: \usepackage[margin=3cm]{geometry}
 #+OPTIONS: toc:nil
 #+DATE:
 #+AUTHOR: Dr. Miguel Carrillo Barajas \\
@@ -51,7 +52,7 @@ impLogicamente gammaL phi = and [(satModGamma m gammaL) `opImp` (satMod m phi) |
     where
     varsOfGammaPhi  = varsOfPhiList (phi: gammaL)
     opImp :: Bool->Bool -> Bool
-    opImp g h= not g || h
+    opImp g h = not g || h
 #+end_src
 *** Equivalencia Lógica
 Sean $\phi$ y $\psi$ formulas de la LP, decimos que son lógicamente equivalentes si y solo si
@@ -82,28 +83,30 @@ Axiomas para toda $\alpha$, $\beta$ y $\gamma$ en PLI:
  * L2. $(\alpha \to (\beta \to \gamma)) \to ((\alpha \to \beta) \to (\alpha \to \gamma))$
  * L3. $(\neg \alpha \to \neg \beta) \to (\beta \to \alpha)$
 *** Modus Ponens
-Teniendo a $\alpha$ y $\alpha \to \beta$ se puede inferir $\beta$
-
+El Modus Ponens es una regla de inferencia de la lógica proposicional. Se puede resumir como:
+Si $\alpha \to \beta$ y $\alpha$ es verdad entonces se puede inferir que $\beta$ también es verdad.
+*** Deducciones en el Sistema L.
 Def. Sean $\phi \in$ PLI y $\Gamma \subset$ PLI.
-Decimos que $\phi$ se deduce de $\gamma$ en el sistema L, $\gamma \vdash \phi$ si existe una
-lista finita de formulas $\psi_1,\psi_2,\dots,\psi_n \in$ PLI, tal que:
- * $\psi_n = \phi$
+
+Decimos que $\phi$ se deduce de $\Gamma$ en el sistema L, $\Gamma \vdash \phi$ si existe una
+lista finita de formulas $\gamma_1,\gamma_2,\dots,\gamma_n \in$ PLI, tal que:
+ * $\gamma_n = \phi$
  * Para toda $k \in {1,\dots,n}$ se cumplen:
-  * $\psi_k \in \Gamma$ (premisa)
-  * $\psi_k$ es una instancia de un axioma de L.
-  * Existe $i,j < k$ tales que $\psi_k$ es resultado de aplicar MP a $\psi_i$ y $\psi_j$. (MP i,j)
+  * $\gamma_k \in \Gamma$ (premisa)
+  * $\gamma_k$ es una instancia de un axioma de L.
+  * Existe $i,j < k$ tales que $\gamma_k$ es resultado de aplicar MP a $\gamma_i$ y $\gamma_j$. (MP i,j)
 *** Funciones
-**** Función que muestre las formulas
+**** Función que muestra las formulas
 #+begin_src haskell 
 showPLI :: PLI -> String
 showPLI phi = case phi of
   Bot                            -> "FF" 
   Var v                          -> "v"++show v
   Oimp Bot Bot                   -> "TT"
-  (a`Oimp`(b`Oimp`Bot))`Oimp`Bot -> "("++ (showPLI a) ++" & "++ (showPLI b) ++")"
-  (alpha `Oimp` Bot) `Oimp` beta -> "("++ (showPLI alpha) ++" | "++ (showPLI beta) ++")"
-  Oimp alpha Bot                 -> "~("++ (showPLI alpha) ++")"
-  Oimp alpha beta                -> "("++ (showPLI alpha) ++" -> "++ (showPLI beta) ++")" 
+  (a`Oimp`(b`Oimp`Bot))`Oimp`Bot -> "("++(showPLI a)++" & "++(showPLI b)++")"
+  (alpha `Oimp` Bot) `Oimp` beta -> "("++(showPLI alpha)++" | "++(showPLI beta)++")"
+  Oimp alpha Bot                 -> "~("++(showPLI alpha)++")"
+  Oimp alpha beta                -> "("++(showPLI alpha)++" -> "++(showPLI beta)++")" 
 #+end_src
 **** Operadores faltantes
 ***** oNeg
