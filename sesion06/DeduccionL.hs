@@ -26,9 +26,15 @@ esAxL3 phi = case phi of
   ((alpha `Oimp` Bot) `Oimp` (beta `Oimp` Bot)) `Oimp` (gamma `Oimp` delta) -> alpha == delta && beta == gamma
   _                              -> False
 
+-- Para toda phi \in PLI, Bool -> phi 
+esAxL4 :: PLI -> Bool
+esAxL4 phi = case phi of
+  Bot `Oimp` _ -> True
+  _            -> False
+
 -- Función que nos dice si una formula es una Axioma del sistema L
 esAxiomaDeL :: PLI -> Bool
-esAxiomaDeL phi = esAxL1 phi || esAxL2 phi || esAxL3 phi
+esAxiomaDeL phi = esAxL1 phi || esAxL2 phi || esAxL3 phi || esAxL4 phi
 
 -- Función que nos dice si se aplico de manera correcta Modus Ponens
 esModusPonens :: (PLI, PLI, PLI) -> Bool
