@@ -140,6 +140,28 @@ ejercicio_j = -- {Bot} |- a
     phi = a
       in esDeduccionEnL gamma lpasos phi
 
+-- Ejercicio K
+ejercicio_k :: IO()
+ejercicio_k = -- {oNeg (oNeg a), oNeg a ⇒ a} |- a
+  let
+    a = Var 1
+    gamma = []
+    (⇒) :: PLI -> PLI -> PLI
+    f⇒g = Oimp f g
+    lpasos = [
+        (1, (oNeg (oNeg a), Prem)), 
+        (2, (Bot ⇒ a, Ax)), -- Axioma 4 
+        (3, (oNeg a ⇒ a ,  Prem)), -- Ejercicio G 1 2
+        (4, ((oNeg a ⇒ oNeg Bot) ⇒ ((oNeg a ⇒ Bot) ⇒ a), Ax)), --Axioma 3 Mendelson
+        (5, (oNeg Bot ⇒(oNeg a ⇒ oNeg Bot), Ax)), -- Axioma 1
+        (6, (Bot ⇒ Bot, Ax)), -- Axioma 4
+        (7, (oNeg a ⇒ oNeg Bot, ModPon 6 5)),
+        (8, ((oNeg a ⇒ Bot) ⇒ a, ModPon 7 4)),
+        (9, (a, ModPon 1 8))
+        ]
+    phi = a
+      in esDeduccionEnL gamma lpasos phi
+
 
 {-
 ejercicio_ :: IO()
