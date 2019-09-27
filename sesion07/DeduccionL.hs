@@ -58,6 +58,7 @@ type NumTeo = (Int,(PLI,[NumPaso]))
 --
 
 type NumCor = (Int,(PLI, [PLI], [NumPaso]))
+
 -- Reglas del sistema L
 data ReglaL = Prem           -- Justificación por premisa
             | Ax             -- Justificación por un axioma
@@ -157,8 +158,9 @@ esInstanciaDe f g = fst $ esInstanciaSubs [] f g
 
 esInstanciaLDe :: PLI -> [PLI] -> Bool
 esInstanciaLDe f gamma = or $ map (esInstanciaDe f) gamma
+
 --
-checkTeo :: Int->[NumTeo] -> [NumPaso]-> NumPaso -> Bool
+checkTeo :: Int -> [NumTeo] -> [NumPaso] -> NumPaso -> Bool
 -- Precondition: lTeoP es una la lista de teoremas numerados (Ver Def1 y Def2).
 -- Revisamos que phi es instancia del teorema m de lTeo, i.e. (m,(tm,pm)) in lTeo y phi es instancia de tm.
 checkTeo m lTeo lpp p = 
@@ -192,34 +194,41 @@ checkCor m i j lCor lpp p =
       Nothing     -> error $ "checkCor: el corolario m no existe, m= "++show m
 
 -- --
-checkPaso :: [NumTeo]-> [PLI]-> [NumPaso]-> NumPaso-> Bool
+checkPaso :: [NumTeo]-> [NumCor] -> [PLI]-> [NumPaso]-> NumPaso-> Bool
 -- Revisa que el paso sea correcto.
 -- lTeo lprem lpp p: Lista de teoremas, Lista de premisas, Lista de pasos, paso actual.
-checkPaso lTeo lprem lpp p@(_, (_, reglaDeL)) =
+checkPaso lTeo lCor lprem lpp p@(_, (_, reglaDeL)) =
     case reglaDeL of
         Prem        -> checkPrem lprem lpp p
         Ax          -> checkAx lpp p
         ModPon i j  -> checkModPon i j lpp p
         Teo m       -> checkTeo m lTeo lpp p
+        Cor n i j   -> checkCor n i j lCor lpp p
         --_               -> error $ "checkPaso: reglaDeL debe ser una regla de L, reglaDeL= "++show reglaDeL
 --
 -- Revisa que la prueba sea correcta
-checkPrueba :: [NumTeo]-> [PLI] -> [NumPaso] -> Bool
-checkPrueba lTeo lprem lpasos = case lpasos of
+checkPrueba :: [NumTeo]-> [NumCor] -> [PLI] -> [NumPaso] -> Bool
+checkPrueba lTeo lCor lprem lpasos = case lpasos of
   []      -> True -- Si la lista es vacía entonces es cierto
-  _:_     -> checkPrueba lTeo lprem lpp && checkPaso lTeo lprem lpp p -- Hacemos recursión.
+  _:_     -> checkPrueba lTeo lCor lprem lpp && checkPaso lTeo lCor lprem lpp p -- Hacemos recursión.
   where
     n   = length lpasos
     lpp = Prelude.take (n-1) lpasos
     p   = last lpasos
 --
-esTeoremaPrueba :: [NumTeo]-> PLI -> [NumPaso] -> Bool
+esTeoremaPrueba :: [NumTeo]-> [NumCor] -> PLI -> [NumPaso] -> Bool
 -- esTeoremaPrueba lTeo phi lpp= true sii lpp es una prueba (lista de pasos) que testifica que {} |- phi .
 -- Def. Sea phi in PLI. Decimos que phi es un teorema de L sii phi se deduce en L sin usar premisas.
-esTeoremaPrueba lTeo phi lpp =     phi == fN                -- phi es la formula del ultimo paso
-                                && checkPrueba lTeo [] lpp  -- lpp es una prueba (sin premisas).
+esTeoremaPrueba lTeo lCor phi lpp =     phi == fN                -- phi es la formula del ultimo paso
+                                && checkPrueba lTeo lCor [] lpp  -- lpp es una prueba (sin premisas).
                         where
                         (_, (fN, _))= last lpp
+
+esCorolarioPrueba :: [NumTeo] -> [NumCor] -> PLI -> [PLI] -> [NumPaso] -> Bool
+esCorolarioPrueba lTeo lCor phi gamma lpp =  phi == fN
+                                     && checkPrueba lTeo lCor gamma lpp
+                                     where
+                                     (_, (fN, _)) = last lpp
 --
 --Muestra una lista de formulas.
 showLphi :: [PLI] -> String
@@ -229,41 +238,47 @@ showLphi lphi= case lphi of
                     []      -> ""
 
 -- Muesta la regla
-showRegla :: [NumTeo]-> ReglaL -> String
-showRegla lTeo r = case r of
+showRegla :: [NumTeo] -> [NumCor] -> ReglaL -> String
+showRegla lTeo lCor r = case r of
     Prem          -> "premisa"
     Ax            -> "axioma"
     ModPon i j    -> "Modus Ponens "++show i++","++show j
-    Teo  m        -> "Teo"++show m ++":" ++showPLI teo 
+    Teo  m        -> "Teo"++show m ++":" ++showPLI teo
                     where
                     mTeo = lookup m lTeo
                     teo  = case mTeo of
                                 Just (fm,_) -> fm
                                 Nothing     -> error $ "showRegla: el teorema m no existe, m= "++show m
+    Cor n k l     -> "Cor"++show n ++":" ++showPLI cor
+                    where
+                    mCor = lookup n lCor
+                    cor = case mCor of
+                      Just (cm,_,_) -> cm
+                      Nothing       -> error $ "showRegla: el corolario n no existe, n= " ++show n
 --
 -- Muestra un paso indicando, mediante b, si es correcto, o no.
-showNumPasoCheck :: [NumTeo]-> Int -> NumPaso -> Bool -> String
-showNumPasoCheck lTeo fSize (n,(phi, r)) b = "\t" ++ (show n) ++ ") " ++ fS ++ spaceAfterPhi ++ rS ++ checks
+showNumPasoCheck :: [NumTeo]-> [NumCor] -> Int -> NumPaso -> Bool -> String
+showNumPasoCheck lTeo lCor fSize (n,(phi, r)) b = "\t" ++ (show n) ++ ") " ++ fS ++ spaceAfterPhi ++ rS ++ checks
   where
     fS = showPLI phi
     spaceAfterPhi = " " ++ Prelude.take (fSize-(length fS)) (repeat ' ')
-    rS = "\t" ++ (showRegla lTeo r)
+    rS = "\t" ++ (showRegla lTeo lCor r)
     checks = if b
       then ". Correcto"
       else ". Incorrecto"
 
 -- Muestra los pasos de lpasos indicando si son correctos, o no.
 -- Initial call: showLpasos fSize lprem [] lpasos
-showLpasos :: Int -> [NumTeo]-> [PLI] -> [NumPaso] -> [NumPaso] -> IO ()
-showLpasos fSize lTeo lprem prevLp lpasos = case lpasos of
+showLpasos :: Int -> [NumTeo]-> [NumCor] -> [PLI] -> [NumPaso] -> [NumPaso] -> IO ()
+showLpasos fSize lTeo lCor lprem prevLp lpasos = case lpasos of
   []    -> putStr ""
   p:lps ->  do
-            putStrLn $ showNumPasoCheck lTeo fSize p (checkPaso lTeo lprem prevLp p)
-            showLpasos fSize lTeo lprem (prevLp++[p]) lps
+            putStrLn $ showNumPasoCheck lTeo lCor fSize p (checkPaso lTeo lCor lprem prevLp p)
+            showLpasos fSize lTeo lCor lprem (prevLp++[p]) lps
 
 
-showCheckConclusion :: [NumTeo]-> [PLI] -> [NumPaso] -> PLI -> IO ()
-showCheckConclusion lTeo lpremisas lpasos phi =
+showCheckConclusion :: [NumTeo]-> [NumCor] -> [PLI] -> [NumPaso] -> PLI -> IO ()
+showCheckConclusion lTeo lCor lpremisas lpasos phi =
   do
     putStrLn mensaje
     putStrLn ""
@@ -272,7 +287,7 @@ showCheckConclusion lTeo lpremisas lpasos phi =
         | not pruebaOK = "\t*** Hay pasos incorrectos. ***"
         | phi /= fN = "\t*** La ultima formula no es el objetivo: ***"++ (showPLI phi) ++" /= "++ (showPLI fN)
         | otherwise =  "\tCorrecto. Mediante el sistema L: "++ lpremS ++ " |- " ++ showPLI fN
-      pruebaOK = checkPrueba lTeo lpremisas lpasos
+      pruebaOK = checkPrueba lTeo lCor lpremisas lpasos
       (_,(fN,_)) = ultimoPaso lpasos
       lpremS = if lpremisas /= []
         then "{" ++ showLphi lpremisas ++"}"
@@ -283,10 +298,10 @@ maxL :: Ord a => [a] -> a
 maxL = foldr1 (\x y ->if x >= y then x else y)
 --
 
-esDeduccionEnL :: [NumTeo]-> [PLI] -> [NumPaso] -> PLI -> IO()
-esDeduccionEnL lTeo lpremisas lpasos phi =
+esDeduccionEnL :: [NumTeo] -> [NumCor] -> [PLI] -> [NumPaso] -> PLI -> IO()
+esDeduccionEnL lTeo lCor lpremisas lpasos phi =
   do
-    showLpasos fSize lTeo lpremisas [] lpasos
-    showCheckConclusion lTeo lpremisas lpasos phi
+    showLpasos fSize lTeo lCor lpremisas [] lpasos
+    showCheckConclusion lTeo lCor lpremisas lpasos phi
   where
     fSize = maxL [length (showPLI f) | (_,(f,_)) <- lpasos ]
