@@ -1,0 +1,155 @@
+#+LATEX_CLASS: article
+#+LANGUAGE: es
+#+LATEX_HEADER: \usepackage[AUTO]{babel}
+#+LATEX_HEADER: \usepackage{fancyvrb}
+#+OPTIONS: toc:nil
+#+DATE:
+#+AUTHOR: Dr. Miguel Carrillo Barajas \\
+#+AUTHOR: Sara Doris Montes Incin \\
+#+AUTHOR: Mauricio Esquivel Reyes \\
+#+TITLE: Sesión de laboratorio 05 \\
+#+TITLE: Lógica Computacional
+
+* Formas normales
+** Negación
+El objetivo de esta forma normal es obtener una fórmula equivalente a una fórmula dada sin
+implicaciones, donde además los símbolos de negación solo afecten a fórmulas
+atómicas.
+#+begin_src haskell 
+-- Función que transforma una formula a su forma normal de negación
+-- Precondición: no debe tener implicaciones.
+noImpNNF :: PL -> PL
+noImpNNF phi = case phi of
+  -- Casos base:
+  Top -> Top
+  Bot -> Bot
+  Var v -> Var v
+  -- Casos recursivos:
+  Oneg alfa -> case alfa of
+    -- Casos bases (alfa)
+    Top -> Bot
+    Bot -> Top
+    Var v -> Oneg (Var v)
+    -- Casos recursivos (alfa)
+    Oneg beta -> noImpNNF beta
+    Oand beta gamma -> noImpNNF (Oor (Oneg beta) (Oneg gamma))
+    Oor beta gamma -> noImpNNF (Oand (Oneg beta) (Oneg gamma))
+
+  Oand alfa beta -> Oand (noImpNNF alfa) (noImpNNF beta)
+  Oor alfa beta -> Oor (noImpNNF alfa) (noImpNNF beta)
+
+-- Función que transforma una formula a su forma normal de negación.
+-- Precondición: ninguna.
+toNNF :: PL -> PL
+toNNF = noImpNNF . quitaImp -- Composicion de funciones.
+#+end_src
+** Conjunción
+La llamada forma normal de conjunción permite expresar cualquier fórmula proposicional como
+una conjunción de disyunciones llamadas cláusulas.
+\[CNF         ::= <Clausula> | (<Clausula> \land CNF).\]
+\[<Clausula>  ::= \bot | <Literal>  | (<Literal> \lor <Clausula>)\]
+\[<Literal>   ::= <Variable> | \neg \<Variable>\]
+\[<Variable>  ::= v <Indice>\]
+\[<Indice>    ::= i,  i \in \mathbb{N}\]
+
+*** Es clausula
+Función que nos indica si una fórmula tiene la forma de una clausula.
+#+begin_src haskell
+esClausula :: PL -> Bool
+esClausula phi = case phi of
+  Bot -> True
+  Var _ -> True
+  Oneg alfa -> case alfa of
+    Var _ -> True
+    _ -> False
+  Oor alpha beta -> esClausula alpha && esClausula beta
+  _ -> False
+#+end_src
+
+*** Literales de una formula
+Conjunto de variables (solo indices) de una formula.
+#+begin_src haskell
+varsOf :: PL -> [Indice]
+varsOf phi = case phi of
+ Top -> []
+ Bot -> []
+ Var p -> [p]
+ Oneg alpha = case alpha of
+  Var n -> [-n]
+  _ -> varsOf p 
+ Oand alpha beta -> nub $ (varsOf alpha) ++ (varsOf beta)
+ Oor alpha beta -> nub $ (varsOf alpha) ++ (varsOf beta)
+ Oimp alpha beta = nub $ (varsOf alpha) ++ (varsOf beta)
+#+end_src
+*** Formula valida
+Decide si $\phi$ es valida.
+#+begin_src haskell
+enValPL :: PL -> Bool
+enValPL phi = and[satMod y phi |y <- powerSet(varsOf(phi))]
+#+end_src
+*** Formula satisfacible
+Decide si $\phi$ es satisfactible.
+#+begin_src haskell
+enSatPL :: PL -> Bool
+enSatPl phi = or[satMod y phi | y <- powerSet(varsOf(phi))]
+#+end_src
+*** Lista de clausulas
+#+begin_src haskell
+-- Nos da la lista de clausulas de una formula
+-- Precondición: la formula debe estar en CNF
+listClau :: PL -> [PL]
+listClau phi = case phi of 
+  Oand alpha beta -> listClau alpha ++ listClau beta 
+  _-> [phi]
+#+end_src
+*** Lista de clausulas como lista de indices
+#+begin_src haskell
+-- Nos da las clasusulas de una formula en forma de listas de indices
+-- Precondición: la formula debe estar en CNF
+liteCNF :: PL -> [[Indice]]
+liteCNF phi = if esCNF(phi) then 
+  map varsOf (listClau phi)
+ else
+  error $ "No esta en CNF"
+#+end_src
+*** Lista de terminos
+#+begin_src haskell
+-- Nos da la lista de terminos de una formula
+-- Precondición: la formula debe estar en DNF
+listTerm :: PL -> [PL]
+listTerm phi = case phi of 
+  Oor alpha beta -> listTerm alpha ++ listTerm beta
+  _ -> [phi]
+#+end_src
+*** Lista de terminos como lista de indices
+#+begin_src haskell
+-- Nos da los terminos de una formula en forma de lista de indices
+-- Precondición: la formula debe estar en DNF
+liteDNF :: PL -> [[Indice]]
+liteDNF phi = if esDNF(phi) then 
+  map varsOf (listTerm phi)
+ else
+  error $ "No esta en DNF"
+#+end_src
+*** Indices complementarios
+#+begin_src haskell
+-- Nos indica si en una lista de indices existen dos complementarios
+comple :: [Indice] -> Bool
+comple lst = case lst of
+  [] -> False
+  x:xs -> if elem (-x) xs then True else comple xs
+#+end_src
+*** CNF valida
+#+begin_src haskell
+-- Nos dice si una formula en CNF es valida
+-- Precondición: la formula debe estar en CNF
+valCNF :: PL -> Bool
+valCNF phi = and (map comple(liteCNF(phi)))
+#+end_src
+*** DNF satisfacible
+#+begin_src haskell
+-- Nos dice si una formula en DNF es satisfacible
+-- Precondición: la formula debe estar en DNF
+satDNF phi = if esDNF phi then 
+satDNF phi = or (map not (map comple (liteDNF(phi)))
+#+end_src
