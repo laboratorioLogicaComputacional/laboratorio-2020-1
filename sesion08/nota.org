@@ -43,15 +43,14 @@ noImpNNF phi = case phi of
 toNNF :: PL -> PL
 toNNF = noImpNNF . quitaImp -- Composicion de funciones.
 #+end_src
-** Conjunción
-La llamada forma normal de conjunción permite expresar cualquier fórmula proposicional como
+** CNF
+La llamada forma normal conjuntiva permite expresar cualquier fórmula proposicional como
 una conjunción de disyunciones llamadas cláusulas.
 \[CNF         ::= <Clausula> | (<Clausula> \land CNF).\]
 \[<Clausula>  ::= \bot | <Literal>  | (<Literal> \lor <Clausula>)\]
 \[<Literal>   ::= <Variable> | \neg \<Variable>\]
 \[<Variable>  ::= v <Indice>\]
 \[<Indice>    ::= i,  i \in \mathbb{N}\]
-
 *** Es clausula
 Función que nos indica si una fórmula tiene la forma de una clausula.
 #+begin_src haskell
@@ -65,7 +64,55 @@ esClausula phi = case phi of
   Oor alpha beta -> esClausula alpha && esClausula beta
   _ -> False
 #+end_src
+*** Lista de clausulas
+#+begin_src haskell
+-- Nos da la lista de clausulas de una formula
+-- Precondición: la formula debe estar en CNF
+listClau :: PL -> [PL]
+listClau phi = case phi of 
+  Oand alpha beta -> listClau alpha ++ listClau beta 
+  _-> [phi]
+#+end_src
+*** Lista de clausulas como lista de indices
+#+begin_src haskell
+-- Nos da las clasusulas de una formula en forma de listas de indices
+-- Precondición: la formula debe estar en CNF
+liteCNF :: PL -> [[Indice]]
+liteCNF phi = if esCNF(phi) then 
+  map varsOf (listClau phi)
+ else
+  error $ "No esta en CNF"
+#+end_src
 
+** DNF
+La llamada forma normal disyuntiva permite expresar cualquier fórmula proposicional como
+una disyunción de conjunciones llamados términos.
+\[DNF         ::= <Término> | (<Término> \lor DNF).\]
+\[<Término>   ::= \top | <Literal>  | (<Literal> \land <Termino>)\]
+\[<Literal>   ::= <Variable> | \neg \<Variable>\]
+\[<Variable>  ::= v <Indice>\]
+\[<Indice>    ::= i,  i \in \mathbb{N}\]
+*** Lista de terminos
+#+begin_src haskell
+-- Nos da la lista de terminos de una formula
+-- Precondición: la formula debe estar en DNF
+listTerm :: PL -> [PL]
+listTerm phi = case phi of 
+  Oor alpha beta -> listTerm alpha ++ listTerm beta
+  _ -> [phi]
+#+end_src
+*** Lista de terminos como lista de indices
+#+begin_src haskell
+-- Nos da los terminos de una formula en forma de lista de indices
+-- Precondición: la formula debe estar en DNF
+liteDNF :: PL -> [[Indice]]
+liteDNF phi = if esDNF(phi) then 
+  map varsOf (listTerm phi)
+ else
+  error $ "No esta en DNF"
+#+end_src
+
+** Validez y satisfacibilidad
 *** Literales de una formula
 Conjunto de variables (solo indices) de una formula.
 #+begin_src haskell
@@ -93,44 +140,6 @@ Decide si $\phi$ es satisfactible.
 enSatPL :: PL -> Bool
 enSatPl phi = or[satMod y phi | y <- powerSet(varsOf(phi))]
 #+end_src
-*** Lista de clausulas
-#+begin_src haskell
--- Nos da la lista de clausulas de una formula
--- Precondición: la formula debe estar en CNF
-listClau :: PL -> [PL]
-listClau phi = case phi of 
-  Oand alpha beta -> listClau alpha ++ listClau beta 
-  _-> [phi]
-#+end_src
-*** Lista de clausulas como lista de indices
-#+begin_src haskell
--- Nos da las clasusulas de una formula en forma de listas de indices
--- Precondición: la formula debe estar en CNF
-liteCNF :: PL -> [[Indice]]
-liteCNF phi = if esCNF(phi) then 
-  map varsOf (listClau phi)
- else
-  error $ "No esta en CNF"
-#+end_src
-*** Lista de terminos
-#+begin_src haskell
--- Nos da la lista de terminos de una formula
--- Precondición: la formula debe estar en DNF
-listTerm :: PL -> [PL]
-listTerm phi = case phi of 
-  Oor alpha beta -> listTerm alpha ++ listTerm beta
-  _ -> [phi]
-#+end_src
-*** Lista de terminos como lista de indices
-#+begin_src haskell
--- Nos da los terminos de una formula en forma de lista de indices
--- Precondición: la formula debe estar en DNF
-liteDNF :: PL -> [[Indice]]
-liteDNF phi = if esDNF(phi) then 
-  map varsOf (listTerm phi)
- else
-  error $ "No esta en DNF"
-#+end_src
 *** Indices complementarios
 #+begin_src haskell
 -- Nos indica si en una lista de indices existen dos complementarios
@@ -144,7 +153,7 @@ comple lst = case lst of
 -- Nos dice si una formula en CNF es valida
 -- Precondición: la formula debe estar en CNF
 valCNF :: PL -> Bool
-valCNF phi = and (map comple(liteCNF(phi)))
+valCNF phi = and (map comple (liteCNF(phi)))
 #+end_src
 *** DNF satisfacible
 #+begin_src haskell
