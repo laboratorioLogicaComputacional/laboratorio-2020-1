@@ -7,7 +7,7 @@
 #+AUTHOR: Dr. Miguel Carrillo Barajas \\
 #+AUTHOR: Sara Doris Montes Incin \\
 #+AUTHOR: Mauricio Esquivel Reyes \\
-#+TITLE: Sesión de laboratorio 05 \\
+#+TITLE: Sesión de laboratorio 08 \\
 #+TITLE: Lógica Computacional
 
 * Formas normales
@@ -16,7 +16,7 @@ El objetivo de esta forma normal es obtener una fórmula equivalente a una fórm
 implicaciones, donde además los símbolos de negación solo afecten a fórmulas
 atómicas.
 #+begin_src haskell 
--- Función que transforma una formula a su forma normal de negación
+-- Función que transforma una fórmula a su forma normal de negación
 -- Precondición: no debe tener implicaciones.
 noImpNNF :: PL -> PL
 noImpNNF phi = case phi of
@@ -38,7 +38,7 @@ noImpNNF phi = case phi of
   Oand alfa beta -> Oand (noImpNNF alfa) (noImpNNF beta)
   Oor alfa beta -> Oor (noImpNNF alfa) (noImpNNF beta)
 
--- Función que transforma una formula a su forma normal de negación.
+-- Función que transforma una fórmula a su forma normal de negación.
 -- Precondición: ninguna.
 toNNF :: PL -> PL
 toNNF = noImpNNF . quitaImp -- Composicion de funciones.
@@ -46,13 +46,13 @@ toNNF = noImpNNF . quitaImp -- Composicion de funciones.
 ** CNF
 La llamada forma normal conjuntiva permite expresar cualquier fórmula proposicional como
 una conjunción de disyunciones llamadas cláusulas.
-\[CNF         ::= <Clausula> | (<Clausula> \land CNF).\]
-\[<Clausula>  ::= \bot | <Literal>  | (<Literal> \lor <Clausula>)\]
-\[<Literal>   ::= <Variable> | \neg \<Variable>\]
+\[CNF         ::= <Cláusula> | (<Cláusula> \land CNF).\]
+\[<Cláusula>  ::= \bot | <Literal>  | (<Literal> \lor <Cláusula>)\]
+\[<Literal>   ::= <Variable> | \neg <Variable>\]
 \[<Variable>  ::= v <Indice>\]
 \[<Indice>    ::= i,  i \in \mathbb{N}\]
-*** Es clausula
-Función que nos indica si una fórmula tiene la forma de una clausula.
+*** Es cláusula
+Función que nos indica si una fórmula tiene la forma de una cláusula.
 #+begin_src haskell
 esClausula :: PL -> Bool
 esClausula phi = case phi of
@@ -64,19 +64,19 @@ esClausula phi = case phi of
   Oor alpha beta -> esClausula alpha && esClausula beta
   _ -> False
 #+end_src
-*** Lista de clausulas
+*** Lista de cláusulas
 #+begin_src haskell
--- Nos da la lista de clausulas de una formula
--- Precondición: la formula debe estar en CNF
+-- Nos da la lista de cláusulas de una fórmula
+-- Precondición: la fórmula debe estar en CNF
 listClau :: PL -> [PL]
 listClau phi = case phi of 
   Oand alpha beta -> listClau alpha ++ listClau beta 
   _-> [phi]
 #+end_src
-*** Lista de clausulas como lista de indices
+*** Lista de cláusulas como lista de indices
 #+begin_src haskell
--- Nos da las clasusulas de una formula en forma de listas de indices
--- Precondición: la formula debe estar en CNF
+-- Nos da las clasusulas de una fórmula en forma de listas de indices
+-- Precondición: la fórmula debe estar en CNF
 liteCNF :: PL -> [[Indice]]
 liteCNF phi = if esCNF(phi) then 
   map varsOf (listClau phi)
@@ -88,23 +88,23 @@ liteCNF phi = if esCNF(phi) then
 La llamada forma normal disyuntiva permite expresar cualquier fórmula proposicional como
 una disyunción de conjunciones llamados términos.
 \[DNF         ::= <Término> | (<Término> \lor DNF).\]
-\[<Término>   ::= \top | <Literal>  | (<Literal> \land <Termino>)\]
-\[<Literal>   ::= <Variable> | \neg \<Variable>\]
+\[<Término>   ::= \top | <Literal>  | (<Literal> \land <Término>)\]
+\[<Literal>   ::= <Variable> | \neg <Variable>\]
 \[<Variable>  ::= v <Indice>\]
 \[<Indice>    ::= i,  i \in \mathbb{N}\]
-*** Lista de terminos
+*** Lista de términos
 #+begin_src haskell
--- Nos da la lista de terminos de una formula
--- Precondición: la formula debe estar en DNF
+-- Nos da la lista de términos de una fórmula
+-- Precondición: la fórmula debe estar en DNF
 listTerm :: PL -> [PL]
 listTerm phi = case phi of 
   Oor alpha beta -> listTerm alpha ++ listTerm beta
   _ -> [phi]
 #+end_src
-*** Lista de terminos como lista de indices
+*** Lista de términos como lista de indices
 #+begin_src haskell
--- Nos da los terminos de una formula en forma de lista de indices
--- Precondición: la formula debe estar en DNF
+-- Nos da los términos de una fórmula en forma de lista de indices
+-- Precondición: la fórmula debe estar en DNF
 liteDNF :: PL -> [[Indice]]
 liteDNF phi = if esDNF(phi) then 
   map varsOf (listTerm phi)
@@ -113,8 +113,8 @@ liteDNF phi = if esDNF(phi) then
 #+end_src
 
 ** Validez y satisfacibilidad
-*** Literales de una formula
-Conjunto de variables (solo indices) de una formula.
+*** Literales de una fórmula
+Conjunto de variables (solo indices) de una fórmula.
 #+begin_src haskell
 varsOf :: PL -> [Indice]
 varsOf phi = case phi of
@@ -128,17 +128,17 @@ varsOf phi = case phi of
  Oor alpha beta -> nub $ (varsOf alpha) ++ (varsOf beta)
  Oimp alpha beta = nub $ (varsOf alpha) ++ (varsOf beta)
 #+end_src
-*** Formula valida
+*** Fórmula valida
 Decide si $\phi$ es valida.
 #+begin_src haskell
-enValPL :: PL -> Bool
-enValPL phi = and[satMod y phi |y <- powerSet(varsOf(phi))]
+esValPL :: PL -> Bool
+esValPL phi = and[satMod y phi |y <- powerSet(varsOf(phi))]
 #+end_src
-*** Formula satisfacible
+*** Fórmula satisfacible
 Decide si $\phi$ es satisfactible.
 #+begin_src haskell
-enSatPL :: PL -> Bool
-enSatPl phi = or[satMod y phi | y <- powerSet(varsOf(phi))]
+esSatPL :: PL -> Bool
+esSatPL phi = or[satMod y phi | y <- powerSet(varsOf(phi))]
 #+end_src
 *** Indices complementarios
 #+begin_src haskell
@@ -150,15 +150,15 @@ comple lst = case lst of
 #+end_src
 *** CNF valida
 #+begin_src haskell
--- Nos dice si una formula en CNF es valida
--- Precondición: la formula debe estar en CNF
+-- Nos dice si una fórmula en CNF es valida
+-- Precondición: la fórmula debe estar en CNF
 valCNF :: PL -> Bool
 valCNF phi = and (map comple (liteCNF(phi)))
 #+end_src
 *** DNF satisfacible
 #+begin_src haskell
--- Nos dice si una formula en DNF es satisfacible
--- Precondición: la formula debe estar en DNF
-satDNF phi = if esDNF phi then 
+-- Nos dice si una fórmula en DNF es satisfacible
+-- Precondición: la fórmula debe estar en DNF
+satDNF :: PL -> Bol 
 satDNF phi = or (map not (map comple (liteDNF(phi)))
 #+end_src
