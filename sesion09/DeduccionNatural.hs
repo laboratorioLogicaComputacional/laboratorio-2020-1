@@ -66,8 +66,8 @@ conKof :: Int -> PL -> PL
 -- conyunto k de f
 conKof k f = case f of
               f1 `Oand` f2
-                    | k==1 && f==f1 -> f1
-                    | k==2 && f==f2 -> f2
+                    | k==1  -> f1
+                    | k==2  -> f2
                     | otherwise     -> error $ "conKof: k debe ser 1 o 2, k= "++show k
               _                     -> error $ "conKof: f debe ser una conjuncion, f="++show f
 --
