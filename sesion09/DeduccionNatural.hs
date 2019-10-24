@@ -374,15 +374,6 @@ checkPaso lprem lpp p@(_,(_,dnRule,_)) = -- listaDePremisas listaDePasosPrevios 
         Copy _      -> checkCopyR lpp p -- verifica que p es un uso de la regla Copy.
         --_                               -> error $ "checkPaso: caso no implementado aun, p="++show p
 --
---Tests:
---checkPaso [] [] (Var 1,Isup,S.fromList [Var 1],[(1,0)])
---let{v1=Var 1; lpasos=[(1,(v1,Isup,S.fromList [v1],[(1,0)]))]; p=(v1 `Oimp` v1,Iimp 1 1,S.fromList [],[(1,1)])} in checkPaso [] lpasos p
---checkPaso [] [(1,(Var 1,Isup,S.fromList [Var 1],[]))] (Var 1 `Oimp` (Var 1),Iimp 1 1,S.fromList [],[])
---let {lpasos=[]; f=Var 1; r=Isup; ls=S.fromList [f]; lc=[(1,0)]} in checkPaso [] lpasos (f,r,lc)
---checkPaso [] [] (Var 1,Isup,S.fromList [Var 1],[(1,0)])
---checkPaso [] [(1,(Var 1,Isup,S.fromList [Var 1],[(1,0)]))] (Var 1 `Oimp` (Var 1),Iimp 1 1,S.fromList [],[(1,1)])
---
---
 --
 checkPrueba :: [PL]->[NumPaso] -> Bool
 -- True sii todos los pasos de lpasos son pasos válidos mediante alguna regla de deduccion natural.
@@ -394,16 +385,6 @@ checkPrueba lprem lpasos= -- listaDePremisas listaDePasos
          n  = length lpasos
          lpp= Prelude.take (n-1) lpasos
          p  = last lpasos
---
---Tests:
---checkPrueba [] [(1,(Top,Itop,S.fromList [],[]))]
---checkPrueba [] []
---checkPrueba [] [(1,(Var 1,Isup,S.fromList [Var 1],[]))]
---      False OK
---checkPrueba [] [(1,(Var 1,Isup,S.fromList [Var 1],[(1,0)]))]
---let{v1=Var 1} in checkPrueba [] [(1,(v1,Isup,S.fromList [v1],[(1,0)])), (2,(v1 `Oimp` v1,Iimp 1 1,S.fromList [],[(1,1)]))]
---let{v1=Var 1; lpasos=[(1,(v1,Isup,S.fromList [v1],[(1,0)]))]} in checkPrueba [] lpasos
---checkPrueba [] [(1,(Var 2,Isup,S.fromList [Var 2])), (2,(Var 1 `Oimp` (Var 2),Iimp 1 1,S.fromList [Var 2])), (3,(Var 2 `Oimp`(Var 1 `Oimp` (Var 2)),Iimp 1 2,S.fromList []))]
 --
 --
 ---------------------------------------------------------------------------------------------------------------
@@ -484,19 +465,6 @@ showLpasos fSize lprem prevLp lpasos =
                         putStrLn $ showNumPasoCheck fSize p (checkPaso lprem prevLp p)
                         showLpasos fSize lprem (prevLp++[p]) lps
 --
---Test:
---let {v1=Var 1; v2=Var 2; proof=[(1,(v2,Isup,S.fromList [v2],[(1,0)]))]} in showLpasos 30 [] [] proof
---let {v1=Var 1; v2=Var 2; proof=[(1,(v2,Isup,S.fromList [v2],[(1,0)])), (2,(v1 `Oimp` v2,Iimp 1 1,S.fromList [v2],[(1,1)]))]} in showLpasos 30 [] [] proof
---let {v1=Var 1; proof=[(1,(v1,Isup,S.fromList [v1],[(1,0)])), (2,(v1 `Oimp` v1,Iimp 1 1,S.fromList [],[(1,1)]))]} in showLpasos 30 [] [] proof
---
---let {v1=Var 1; proof=[(2,(v1 `Oimp` v1,Iimp 1 1,S.fromList [],[(1,1)]))]} in showLpasos 30 [] [(1,(v1,Isup,S.fromList [v1],[(1,0)]))] proof
---let{v1=Var 1; p=(2,(v1 `Oimp` v1,Iimp 1 1,S.fromList [],[(1,1)]))} in (checkPaso [] [(1,(v1,Isup,S.fromList [v1],[(1,0)]))] p)
---      True OK
---let {v1=Var 1; proof=[(1,(v1,Isup,S.fromList [v1],[(1,0)])), (2,(v1 `Oimp` v1,Iimp 1 1,S.fromList [],[(1,1)]))]} in showLpasos 30 [] [] proof
---
---let{lpasos= [ (1,(Var 2,                              Isup,S.fromList     [Var 2], [(1,0)])), (2,(Var 1,                              Isup,S.fromList     [Var 2,Var 1], [(1,0),(2,0)])), (3,(Var 2,                              Copy 1,S.fromList   [Var 2,Var 1], [(1,0),(2,0)])), (4,(Var 1 `Oimp` (Var 2),               Iimp 2 3,S.fromList [Var 2], [(1,0),(2,3)]))]; p=(5,(Var 2 `Oimp`(Var 1 `Oimp` (Var 2)), Iimp 1 4,S.fromList [],      [(1,4),(2,3)]))} in checkPaso [] lpasos p
---
---
 showCheckConclusion :: [PL]->[NumPaso]->PL -> IO ()
 showCheckConclusion lpremisas lpasos phi =   
     do
@@ -528,37 +496,5 @@ showCheckDedNat lpremisas lpasos phi = --listaDePremisas listaDePasos
     where
     --fSize= 50
     fSize= maxL [length (showPL f) | (_,(f,_,_)) <- lpasos] 
---
---Test:
---let {phi=Var 2 `Oimp`(Var 1 `Oimp` (Var 2)); proof=[(1,(Var 2,Isup,S.fromList [Var 2],[])), (2,(Var 1 `Oimp` (Var 2),Iimp 1 1,S.fromList [Var 2],[])), (3,(Var 2 `Oimp`(Var 1 `Oimp` (Var 2)),Iimp 1 2,S.fromList [],[]))]} in showCheckDedNat [] proof phi
---
---
---
---Ejercicios: -----------------------------------------------------------------------------
--- 1. Agregar a checkPaso implementación de: 
---      a) Idis1    A |- A v B
---      b) Idis2    B |- A v B
---      c) Edis     AvB,A->C,B->C |- C
---      d) E2neg    ¬¬A |- A
---
--- 2. Implementar el ejemplo p.12 de Thompson:
--- thompsonP12c2 :: IO ()
--- thompsonP12c2 = -- |- --((v1 ⇒ v3) ∧ (v2 ⇒ v3)) ⇒ ((v1 ∨ v2) ⇒ v3)
---
--- 3. Resolver los ejercicios de Thompson:
--- Exercises
--- 1.1. Give a proof of the transitivity of implication, by showing that we can
--- derive A ⇒ C from the assumptions A ⇒ B and B ⇒ C.
--- 1.2. Give a proof of ((A ∨ B) ⇒ C) ⇒ ((A ⇒ C) ∧ (B ⇒ C)).
--- 1.3. Give a proof of (A ⇒ (B ⇒ C)) ⇒ ((A ∧ B) ⇒ C).
--- 1.4. Give proofs of (A ⇒ B) ⇒ (B ⇒ A) and A ⇒ ¬¬A.
--- 1.5. From the assumption (B ∨ C) prove ¬(¬A ∧ ¬B).
--- 1.6. Give derivations of the rules (¬I) and (¬E) given above. In other words
---         • Show that from proofs of B and ¬B from the assumption A among
---         others, we can find a proof of ¬A without the assumption A.
---         • Show that from proofs of A and ¬A we can find a proof of any proposition B.
--- 1.7. Show that the three characterisations of classical logic (as an extension
--- of the intuitionistic system above) are equivalent.
--- 1.8. Using one of the classical systems (using E2neg), give a derivation of the formula
--- ((A ⇒ B) ⇒ A) ⇒ A, which is known as Pierce’s Law.
+
 --
